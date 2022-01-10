@@ -39,7 +39,7 @@
     
     
 
-    <div class="sill" v-if="newNote" >
+    <div class="sill" v-if="newNote.length != 0" >
     <div v-for="item in displayNewNote.slice(0,3)" :key="item.id" >
        <span > {{ item }} </span>
     </div>
@@ -50,8 +50,9 @@
     <div class="search" >
     <input type="searchtext" v-model="searchVal" >
     <button @click="search(searchVal)" id="searchbutton"> Search </button>
-    <span v-if="showSearch === 'NO'"><p> Sorry, the title does not exist! </p></span>
-    <span v-else-if="showSearch ==='YES'">  </span>
+    <span v-if="showSearch == 'NO' " class="errorMsg">  Sorry, the title does not exist! </span>
+  
+    
     </div>
       </div>
      
@@ -69,14 +70,15 @@
       </div>
       
       
-      <div class="box2" v-if="showSearch ==='YES'" > 
+      <div class="box2" v-if="showSearch=='YES'" > 
         <span><button class="deleteSearch" type="button" @click="deleteNote(searchRes)" > Delete Entry: </button></span>
-        <span v-if="isRead"><button class="markedRead" type="button" @click="changeReadStatus"> Marked Not Read </button></span>
-        <span v-if="!isRead"><button class="markedRead" type="button" @click="changeReadStatus"> Marked Read </button></span>
+        <span v-if="read"><button class="markedRead" type="button" @click="changeReadStatus"> Marked Not Read </button></span>
+        <span v-if="!read"><button class="markedRead" type="button" @click="changeReadStatus"> Marked Read </button></span>
         <div v-for="(item, index) in searchRes.slice(0,searchRes.length-1)" :key="index" class="searchBox" > 
           <span>  {{ noteItem[index] }} {{ item }}</span>
         </div>
-        <span class="searchBox"> {{ noteItem[searchRes.length-1] }} {{ flag }}</span>
+        <span class="searchBox"> {{ noteItem[searchRes.length-1] }} </span>
+        {{ flag }}
         
       </div>
       <!-- box 2 is to show all the notes; -->
@@ -105,7 +107,7 @@ export default {
     notes: [], //this is to store all the notes added; 
     searchVal: '',   // get the whatever the user enter in the search bar; 
     searchRes: [],   // to store the result if the search matches; 
-    showSearch: '',     // a string to store for the whole matched note in order to display;
+    showSearch: '',     
     isShow: false,     // controls the right panel to show or not; 
     showAll: false,   // decides if all the notes stored in 'notes' to be shown or not. 
     }
@@ -130,20 +132,17 @@ export default {
       this.notes.forEach(item => {
         if (item.includes(title)){
           this.sametitle = true;
-          } else {
-            this.sametitle = false;
-          }
+          } 
       });
 
-      if(this.sametitle == false && title !== " " && title !== ''){
+      if(this.sametitle == false && title !== " "){
         this.notes.push(this.newNote);
         
       } else if(this.sametitle == true) {
         console.log('Sorry, same title');
         
-      } else {
-        console.log('No content entered ')
       }
+      
   },
 
   
@@ -165,35 +164,53 @@ export default {
     this.title = '',
     this.author = '',
     this.year = null,
-    this.flag = '';
+  
     this.newNote = [];
     this.sametitle = false;
-    // this.searchVal = '';
+
+    this.searchVal = '';
+     this.showSearch = '';
+    this.isShow = false;
+    // console.log(this.searchVal.length)
+   
   },
   search(val){
     var value; 
+    let tempt = false;  //becomes true if match found; 
+    
     val = val.toUpperCase();
      this.notes.forEach((item)=>{
        value = item.find(ele => ele ===val );
-       if (value !== undefined ){
-         this.searchRes = item; 
+       if (value !== undefined ){ 
+         this.searchRes = item;  // pass the matched entry 
          this.isShow = true;
-         this.showSearch = "YES";
+         this.showSearch = 'YES';
          this.showAll = false;
-         console.log('found! ')
-       }
+         tempt = true;
+         console.log('found? ', this.searchRes); 
+         };
+        
     }); 
+     
+
+     console.log(this.searchRes)
+    if(tempt == false){ // nothing matched 
+      console.log('it works!')
+      this.isShow = false;
+      this.showSearch = 'NO';
+    }
       
+
     // console.log(this.searchRes);
     
       
 },
   changeReadStatus(){
-    console.log('this is the old flag: ', this.flag);
+    // change the 'read' status 
     this.read = !this.read; 
-    this.Readflag();
-    console.log('this is to check what the flag is now: ',this.flag);
-    this.notes[3] == this.flag;
+    this.Readflag(); // change the 'flag' variable in data(); 
+    // update the 'notes' array with 'flag' variable;
+    this.searchRes[this.searchRes.length-1] == this.flag;
 
   },
   handleSubmit(e){
@@ -235,18 +252,8 @@ export default {
       return showNewNote;
       // console.log(showNewNote);
     },
-
-    // displaySearch: function(){
-    //   var handlearray = [];
-    //   for(var i=0; i<this.noteItem.length; i++){
-    //     let display = this.noteItem[i] + this.searchRes[i]; 
-    //     handlearray.push(display);
-    //   }
-    //   // console.log(handlearray)
-    //   return handlearray;
-    // },
-
-    isDisable: function(){
+    
+    isDisable: function(){   //to able or disable the 'add new note' button; 
       var result = false;
       if(!(this.title && this.author && this.year)){
         result = true;
@@ -257,19 +264,8 @@ export default {
       return result
     },
 
-    isRead: function(){
-      if(this.flag === 'NO'){
-        console.log('the book is not Read')
-        return false;
-      }
-      if (this.flag === 'YES'){
-        console.log('the book is  read');
-        return true;
-      }
-    },
   }, 
   watch: {
-    
   },
 }
 </script>
@@ -297,18 +293,18 @@ form {
     border-radius: 10px;
   }
 
-.errorMsg{
-  color:rgba(139, 0, 0, 0.839);
-  /* border: solid; */
-
-}
+ 
   .leftbox {
   min-width: 45%;
   /* border: solid; */
   padding: 15px;
   /* background-color: chocolate; */
 }
-  
+  .errorMsg {
+  color:rgba(139, 0, 0, 0.839);
+  /* border: solid; */
+
+}
 
   .rightbox-content{
   min-width: 400px;
