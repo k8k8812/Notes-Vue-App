@@ -70,11 +70,14 @@
       
       
       <div class="box2" v-if="showSearch ==='YES'" > 
-        <span><button class="deleteSearch" type="button" @click="deleteNote(searchRes)" > Delete Result </button></span>
-        <div v-for="item in displaySearch" :key="item.id" class="searchBox" > 
-          <span>  {{ item }}</span>
+        <span><button class="deleteSearch" type="button" @click="deleteNote(searchRes)" > Delete Entry: </button></span>
+        <span v-if="isRead"><button class="markedRead" type="button" @click="changeReadStatus"> Marked Not Read </button></span>
+        <span v-if="!isRead"><button class="markedRead" type="button" @click="changeReadStatus"> Marked Read </button></span>
+        <div v-for="(item, index) in searchRes.slice(0,searchRes.length-1)" :key="index" class="searchBox" > 
+          <span>  {{ noteItem[index] }} {{ item }}</span>
         </div>
-
+        <span class="searchBox"> {{ noteItem[searchRes.length-1] }} {{ flag }}</span>
+        
       </div>
       <!-- box 2 is to show all the notes; -->
   </div>
@@ -109,15 +112,20 @@ export default {
   },
   
   methods: {
-    addNote(title, author, year){
-      title = title.toUpperCase();
-      this.newNote = [ title,author,year];
-      if(this.read){
+    Readflag(){
+       if(this.read){
         this.flag = 'YES';
       } else{
         this.flag = 'NO';
       };
-      this.newNote.push(this.flag); //check if book's read;   
+      return this.flag;
+    },
+    addNote(title, author, year){
+      title = title.toUpperCase();
+      this.newNote = [ title,author,year];
+      
+      let flag = this.Readflag();
+      this.newNote.push(flag); //check if book's read;   
       
       this.notes.forEach(item => {
         if (item.includes(title)){
@@ -137,6 +145,7 @@ export default {
         console.log('No content entered ')
       }
   },
+
   
   deleteNote(note){
       console.log(note);
@@ -179,6 +188,14 @@ export default {
     
       
 },
+  changeReadStatus(){
+    console.log('this is the old flag: ', this.flag);
+    this.read = !this.read; 
+    this.Readflag();
+    console.log('this is to check what the flag is now: ',this.flag);
+    this.notes[3] == this.flag;
+
+  },
   handleSubmit(e){
     console.log('form submitted!');
 
@@ -219,32 +236,15 @@ export default {
       // console.log(showNewNote);
     },
 
-    displayAllNotes: function(){
-      // var x = 0;
-      // var allNotes = []
-      // // var aaa = this.noteItem[2] + this.notes[0][2];
-      // while(x < this.noteItem.length){
-      //   for(var i=0; i<this.notes.length; i++ ){
-      //     let displayAll = "No." + (i+1) + ' :' + this.noteItem[i] + this.notes[x][i];
-          
-      //     console.log(displayAll);
-      //     // allNotes.push(displayAll);
-      //   };
-      //   x += 1;
-      // }
-      
-      // return allNotes;
-    },
-
-    displaySearch: function(){
-      var handlearray = [];
-      for(var i=0; i<this.noteItem.length; i++){
-        let display = this.noteItem[i] + this.searchRes[i]; 
-        handlearray.push(display);
-      }
-      // console.log(handlearray)
-      return handlearray;
-    },
+    // displaySearch: function(){
+    //   var handlearray = [];
+    //   for(var i=0; i<this.noteItem.length; i++){
+    //     let display = this.noteItem[i] + this.searchRes[i]; 
+    //     handlearray.push(display);
+    //   }
+    //   // console.log(handlearray)
+    //   return handlearray;
+    // },
 
     isDisable: function(){
       var result = false;
@@ -255,9 +255,22 @@ export default {
         result = true
       }
       return result
-    }
+    },
+
+    isRead: function(){
+      if(this.flag === 'NO'){
+        console.log('the book is not Read')
+        return false;
+      }
+      if (this.flag === 'YES'){
+        console.log('the book is  read');
+        return true;
+      }
+    },
   }, 
-  
+  watch: {
+    
+  },
 }
 </script>
 
@@ -395,7 +408,7 @@ label {
     background-color:rgba(95, 158, 160, 0.558);
   }
   .searchBox {
-    cursor: pointer;
+    /* cursor: pointer; */
     padding: 5px;  
     margin-top:2px;
      
@@ -408,6 +421,19 @@ label {
     font-size: 15px;
     
   }
+
+  .markedRead {
+    border: solid;
+    background-color: white;
+    color: cadetblue;
+    font-family:'Times New Roman', Times, serif;
+  }
+  .markedRead:hover {
+    background-color:goldenrod;
+    color: white;
+  }
+
+
 button {
     background: cadetblue;
     border: 0;
@@ -428,5 +454,6 @@ button:hover {
   color: grey;
   cursor:none;
 }
+
   
 </style>
